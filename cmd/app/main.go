@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/ITC-yka/mailgox/internal/app"
 	"github.com/ITC-yka/mailgox/internal/imp"
 	"github.com/emersion/go-imap/v2"
+	"github.com/jhillyerd/enmime"
 )
 
 func main() {
@@ -54,8 +56,18 @@ func main() {
 		for _, v := range msg.BodySection {
 			raw = v
 		}
-		fmt.Println(string(raw))
-		// TODO: сюда встаить MIME парсер
+		//создаём reader, т.к. функция, парсящая сообщение, работает с ним.
+		//Т.к. reader'у нужен string, преобразуем байты в string
+		//Я уверен, что тут лучше как-то через указатели это сделать, чтоб лишнюю память не тратить.
+		//но я пока плохо знаю язык.
+		r := strings.NewReader(string(raw))
+		// https://pkg.go.dev/github.com/jhillyerd/enmime#Envelope - устройство структуры.
+		env, err := enmime.ReadEnvelope(r)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(env.Text)
+		// TODO: Обработать содержимое письма
 
 	}
 
